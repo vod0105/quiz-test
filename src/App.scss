@@ -1,9 +1,77 @@
-.app-container{
-  .header-container{
-    .nav-link{
-      &.active{
-      color: #00bfff;
+.app-container {
+  .header-container {
+
+    .btn-login {
+      border-radius: 5px;
+      margin-right: 15px;
+      border: 1px solid #535353;
+      padding: 7px 15px;
     }
+
+    .btn-signup {
+      border-radius: 5px;
+      margin-right: 15px;
+      border: 1px solid #535353;
+      padding: 7px 15px;
+      background: #303030;
+      color: white;
+      &:hover{
+        background: black;
+      }
     }
   }
+
+  .navbar {
+    padding: 15px 0px;
+    z-index: 10;
+    // opacity: 0.6;
+    background: #f2ece4 !important;
+  .nav-link {
+    &.active {
+      color: #00bfff;
+    }
+  }
+}
+}
+.homepage-container {
+  video {
+    position: fixed;
+    bottom: 0px;
+    width: 100vw;
+  }
+}
+
+.app-content{
+  .homepage-container{
+    .homepage-content{
+      position: relative;
+      padding: 150px 50px;
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      .title-1{
+        font-size: 40px;
+        font-weight: 600;
+
+      }
+      .title-2{
+        font-size: 20px;
+      }
+      .title-3{
+        button{
+          font-size: 15px;
+          border-radius: 5px;
+          padding: 5px 10px;
+          background: #303030;
+          color: white;
+          &:hover{
+            background: black;
+          }
+        }
+        
+      }
+    }
+  }
+
 }
