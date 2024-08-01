@@ -10,6 +10,7 @@ import Admin from './components/Admin/Admin';
 import HomePage from './components/Home/HomePage';
 import Dashboard from './components/Admin/Dashboard';
 import ManageUsers from './components/Admin/ManageUsers';
+import 'react-toastify/dist/ReactToastify.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -23,3 +23,25 @@
         }
     }
 }
+
+.manage-user-container{
+    margin: 5px 0 0 10px;
+    .user-content{
+        .btn-add-new{
+            margin-bottom: 10px;
+            button {
+                display: flex;
+                text-align: center;
+                align-items: center;
+                gap: 5px;
+            }
+
+        }
+    }
+    .title{
+        color: black;
+         font-size: 20px;
+         font-weight: 600;
+         margin-bottom: 10px;
+    }
+}
