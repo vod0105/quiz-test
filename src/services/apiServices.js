@@ -30,4 +30,8 @@ const GetAllUsers = () =>{
     return axios.get("api/v1/participant/all")
 }
 
-export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser}
+const GetAllUsersWithPaginate = (page,limit) =>{
+    return axios.get(`api/v1/participant?page=${page}&limit=${limit}`)
+}
+
+export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser,GetAllUsersWithPaginate}
