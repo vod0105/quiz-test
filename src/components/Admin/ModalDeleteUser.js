@@ -13,10 +13,11 @@ function ModalDeleteUser(props) {
     console.log("id: ",idUser)
     let data = await DeleteUser(idUser);
     console.log(">> check res ", data);
-    if (data&& data.EC ===0){
+    if (data && data.EC === 0){
         toast.success(data.EM);
         handleClose();
-        await props.fetchListUsers();
+        props.setCurrentPage(1);
+        await props.fetchListUsersWithPage(props.currentPage);
     }else{
         toast.error(data.EM);
     }

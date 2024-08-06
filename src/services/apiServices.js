@@ -1,5 +1,14 @@
 import axios from '../utils/axiosCustomize';
 
+const PostSignIn = (email,password) =>{
+    console.log(email,password)
+    return axios.post(`api/v1/login`, {email: email,password: password});
+}
+
+const PostSignUp = (username,email,password) =>{
+    return axios.post(`api/v1/register`, {username:username,email: email,password: password});
+}
+
 const PostCreateUser = (email,password,username,role,image) => {
     const data = new FormData();
     data.append('email',email);
@@ -7,7 +16,7 @@ const PostCreateUser = (email,password,username,role,image) => {
     data.append('username',username);
     data.append('role',role);
     data.append('userImage',image);
-
+    console.log("image api: ",image)
     return axios.post('api/v1/participant', data);
 }
 
@@ -34,4 +43,4 @@ const GetAllUsersWithPaginate = (page,limit) =>{
     return axios.get(`api/v1/participant?page=${page}&limit=${limit}`)
 }
 
-export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser,GetAllUsersWithPaginate}
+export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser,GetAllUsersWithPaginate,PostSignIn,PostSignUp}

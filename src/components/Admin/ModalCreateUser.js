@@ -57,12 +57,15 @@ const ModalCreateUser = (props) => {
             toast.error('Invalid Password');
             return;            
         }
+            console.log("image: ",image)
             let data = await PostCreateUser(email,password,username,role,image);
             console.log(">> check res ", data);
             if (data&& data.EC ===0){
                 toast.success(data.EM);
                 handleClose();
-                await props.fetchListUsers();
+                // await props.fetchListUsers();
+                await props.fetchListUsersWithPage(props.currentPage);
+
             }else{
                 toast.error(data.EM);
             }
