@@ -2,9 +2,12 @@ import React from "react";
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import { PostSignIn } from "../../services/apiServices";
+import { useDispatch } from "react-redux";
+import { doLogin } from "../../redux/actions/useAction";
 
 function SignInForm() {
 const navigate = useNavigate();
+const dispatch = useDispatch();
     const [state, setState] = React.useState({
         email: "",
         password: ""
@@ -25,6 +28,7 @@ const navigate = useNavigate();
         let data = await PostSignIn(email,password);
         console.log(">> check res ", data);
         if (data&& data.EC ===0){
+            dispatch(doLogin(data))
             toast.success(data.EM);
             navigate('/');
 
