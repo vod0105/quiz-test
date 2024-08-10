@@ -9,6 +9,10 @@ const PostSignUp = (username,email,password) =>{
     return axios.post(`api/v1/register`, {username:username,email: email,password: password});
 }
 
+const logout = (email,refresh_token) => {
+    return axios.post(`api/v1/logout`,{email,refresh_token});
+}
+
 const PostCreateUser = (email,password,username,role,image) => {
     const data = new FormData();
     data.append('email',email);
@@ -34,7 +38,6 @@ const DeleteUser = (idUser) => {
     return axios.delete('api/v1/participant', {data:{id:idUser}});
 }
 
-
 const GetAllUsers = () =>{
     return axios.get("api/v1/participant/all")
 }
@@ -43,4 +46,16 @@ const GetAllUsersWithPaginate = (page,limit) =>{
     return axios.get(`api/v1/participant?page=${page}&limit=${limit}`)
 }
 
-export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser,GetAllUsersWithPaginate,PostSignIn,PostSignUp}
+const getQuizByUser = () => {
+    axios.get("api/v1/quiz-by-participant");
+}
+
+const PostUpdateProfile = (username,image) => {
+    const data = new FormData();
+    data.append('username',username);
+    data.append('userImage',image);
+
+    return axios.post('api/v1/profile', data);
+}
+
+export {PostCreateUser,GetAllUsers,PutUpdateUser,DeleteUser,GetAllUsersWithPaginate,PostSignIn,PostSignUp,getQuizByUser,logout,PostUpdateProfile}

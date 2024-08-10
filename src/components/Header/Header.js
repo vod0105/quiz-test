@@ -2,11 +2,18 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import { NavLink, useNavigate } from "react-router-dom";
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { NavDropdown } from 'react-bootstrap';
+import { logout } from '../../services/apiServices';
+import { toast } from 'react-toastify';
+import { doLogout } from '../../redux/actions/useAction';
+import { useState } from 'react';
+import ModalProfile from './Profile';
 
 const Header = () => {
+  const [showProfile,setShowProfile] = useState(false);
 
+  const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated)
   const account = useSelector(state => state.user.account)
 
@@ -19,7 +26,20 @@ const Header = () => {
     navigate('/register');
   }
 
+  const handleLogout = async() => {
+    console.log('check logout: ',account.email,account.refresh_token)
+    let res = await logout(account.email,account.refresh_token);
+    if(res.EC === 0 ){
+      dispatch(doLogout());
+      toast.success(res.EM);
+    }
+  }
+
+  const handleProfile = () => {
+    setShowProfile(true);
+  }
   return (
+    <>
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
         <NavLink className="navbar-brand" to='/'>Minh Đức</NavLink>
@@ -38,8 +58,8 @@ const Header = () => {
               </>
               :
                 <NavDropdown title="Settings" id="basic-nav-dropdown">
-                  <NavDropdown.Item href="#">Logout</NavDropdown.Item>
-                  <NavDropdown.Item href="#">Profile</NavDropdown.Item>
+                  <NavDropdown.Item onClick={() => {handleLogout()}}>Logout</NavDropdown.Item>
+                  <NavDropdown.Item onClick={() => {handleProfile()}}>Profile</NavDropdown.Item>
                 </NavDropdown>
 
             }
@@ -48,6 +68,11 @@ const Header = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
+    <ModalProfile 
+          show = {showProfile}
+          setShow = {setShowProfile}
+          /> 
+    </>
   );
 }
 
