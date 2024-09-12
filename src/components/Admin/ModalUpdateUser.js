@@ -3,89 +3,69 @@ import Modal from 'react-bootstrap/Modal';
 import { useEffect, useState } from 'react';
 import { FcPlus } from "react-icons/fc";
 import { toast } from 'react-toastify';
-import {PutUpdateUser} from '../../services/apiServices'
-import _ from 'lodash'
+import { PutUpdateUser } from '../../services/apiServices';
+import _ from 'lodash';
 
 const ModalUpdateUser = (props) => {
-    const {user,setUser,show, setShow} = props
+    const { user, setUser, show, setShow } = props;
 
     const handleClose = () => {
-        // console.log("am")
         setShow(false);
-        // setEmail("");
-        // setPassword("");
-        // setImage("");
-        // setImagePreview("");
-        // setUsername("");
-        // setRole("USER");
+        resetForm();
     }
-    const handleShow = () => setShow(true);
+
+    const resetForm = () => {
+        setEmail("");
+        setPassword("");
+        setImage("");
+        setImagePreview("");
+        setUsername("");
+        setRole("USER");
+    }
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [username, setUsername] = useState("");
     const [role, setRole] = useState("");
-    const [image, setImage] = useState("");
+    const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState("");
 
     const handleImageUpload = (event) => {
-        if (event.target && event.target.files && event.target.files[0]){
-            setImagePreview(URL.createObjectURL(event.target.files[0]))
-            setImage(event.target.value)    
-        }
-        else{
+        const file = event.target.files[0];
+        if (file) {
+            setImagePreview(URL.createObjectURL(file));
+            setImage(file);
+        } else {
             setImagePreview("");
         }
-        // console.log(event.target.files[0])
     }
 
     useEffect(() => {
-        if(!_.isEmpty(user)){
+        if (!_.isEmpty(user)) {
             setEmail(user.email);
             setRole(user.role);
-            setImage("");
             setUsername(user.username);
-            setPassword(user.password)
-            if(user.image){
+            setPassword(user.password || "");
+            if (user.image) {
                 setImagePreview(`data:image/jpeg;base64,${user.image}`);
-            }else{
+            } else {
                 setImagePreview("");
             }
+            setImage(null);  // Reset image input
         }
-    },[user])
+    }, [user]);
 
-    // const validateEmail = (email) => {
-    //     return String(email)
-    //       .toLowerCase()
-    //       .match(
-    //         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    //       );
-    //   };
-
-
-    const handSubmitUpdateUser = async () => {
-        // const isvalidEmail = validateEmail(email);
-        // if (!isvalidEmail){
-        //     toast.error('Invalid Email');
-        //     return;
-        // }
-
-        // if(!password){
-        //     toast.error('Invalid Password');
-        //     return;            
-        // }
-            let data = await PutUpdateUser(user.id,username,role,image);
-            console.log(">> check res ", data);
-            if (data&& data.EC ===0){
-                toast.success(data.EM);
-                handleClose();
-                await props.fetchListUsersWithPage(props.currentPage);
-            }else{
-                toast.error(data.EM);
-            }
-            
-
+    const handleSubmitUpdateUser = async () => {
+        let data = await PutUpdateUser(user.id, username, role, image);
+        if (data && data.EC === 0) {
+            toast.success(data.EM);
+            handleClose();
+            await props.fetchListUsersWithPage(props.currentPage);
+        } else {
+            toast.error(data.EM);
+        }
     }
+
     return (
         <>
             <Modal
@@ -102,44 +82,40 @@ const ModalUpdateUser = (props) => {
                 <Modal.Body>
                     <form className="row g-3">
                         <div className="col-md-6">
-                            <label for="inputEmail4" className="form-label">Email</label>
-                            <input type="email" className="form-control" id="inputEmail4" value={email} disabled
-                                onChange={(event) => { setEmail(event.target.value) }}
-                            />
+                            <label htmlFor="inputEmail4" className="form-label">Email</label>
+                            <input type="email" className="form-control" id="inputEmail4" value={email} disabled />
                         </div>
                         <div className="col-md-6">
-                            <label for="inputPassword4" className="form-label">Password</label>
-                            <input type="password" className="form-control" id="inputPassword4" value={password} disabled
-                                onChange={(event) => { setPassword(event.target.value) }} />
+                            <label htmlFor="inputPassword4" className="form-label">Password</label>
+                            <input type="password" className="form-control" id="inputPassword4" value={password} disabled />
                         </div>
                         <div className="col-md-6">
-                            <label for="inputCity" className="form-label">Username</label>
+                            <label htmlFor="inputCity" className="form-label">Username</label>
                             <input type="text" className="form-control" id="inputCity" value={username}
-                                onChange={(event) => { setUsername(event.target.value) }} />
+                                onChange={(event) => setUsername(event.target.value)} />
                         </div>
                         <div className="col-md-6">
-                            <label for="inputState" className="form-label">Role</label>
+                            <label htmlFor="inputState" className="form-label">Role</label>
                             <select id="inputState" className="form-select" value={role}
-                                onChange={(event) => { setRole(event.target.value) }}>
+                                onChange={(event) => setRole(event.target.value)}>
                                 <option value="USER">User</option>
                                 <option value="ADMIN">Admin</option>
                             </select>
                         </div>
-                        <div className="col-md-12" >
+                        <div className="col-md-12">
                             <label className="form-label upload-image" htmlFor='labelUpload'>
-                                <FcPlus />Upload File Image</label>
+                                <FcPlus /> Upload File Image
+                            </label>
                             <input type="file" className="form-control" id='labelUpload'
                                 hidden
-                                onChange={(event) => handleImageUpload(event)}
+                                onChange={handleImageUpload}
                             />
                         </div>
                         <div className="col-md-12 img-preview">
                             {imagePreview ?
-                            <img src={imagePreview}></img>
-                            :
-                            <span>Preview Image</span>        
-                        }    
-                            
+                                <img src={imagePreview} alt="preview" /> :
+                                <span>Preview Image</span>
+                            }
                         </div>
                     </form>
                 </Modal.Body>
@@ -147,9 +123,9 @@ const ModalUpdateUser = (props) => {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={handSubmitUpdateUser}>Save</Button>
+                    <Button variant="primary" onClick={handleSubmitUpdateUser}>Save</Button>
                 </Modal.Footer>
-            </Modal >
+            </Modal>
         </>
     );
 }

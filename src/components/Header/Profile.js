@@ -6,9 +6,10 @@ import MainInfo from './MainInfo';
 import { useState, useEffect } from 'react';
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { PostUpdateProfile } from '../../services/apiServices';
+import { PostChangePassword, PostUpdateProfile } from '../../services/apiServices';
 import { useDispatch } from "react-redux";
 import { doUpdateProfile } from '../../redux/actions/useAction';
+import ChangePassword from './ChangePassword';
 
 
 const ModalProfile = (props) => {
@@ -33,50 +34,95 @@ const ModalProfile = (props) => {
     }
 
     useEffect(() => {
-        if(account){
+        if (account) {
             setEmail(account.email);
             setRole(account.role);
-            setImage("");
             setUsername(account.username);
             setPassword(account.password)
-            if(account.image){
+            if (account.image) {
+                setImage(account.image);
+                // console.log('pro: ',account.image)
                 setImagePreview(`data:image/jpeg;base64,${account.image}`);
-            }else{
+            } else {
+                setImage("");
                 setImagePreview("");
             }
         }
-    },[account])
+    }, [account])
 
 
-    const handleSubmit = async() => {
+    const handleSubmit = async () => {
+        // lưu ý: 
+        // ở csdl lưu theo dạng base64, tuy nhiên file đưa vào có dạng file
+        // ở redux lưu theo dạng base64
+
         if (activeTab === "main_info") {
-            const dataStoreUpdate = {
-                username:username,
-                image:image
+            // Kiểm tra nếu `image` là một file (người dùng đã tải lên một ảnh mới)
+            if (image instanceof File) {
+                const reader = new FileReader();
+
+                reader.onloadend = async () => {
+                    const base64String = reader.result.split(',')[1]; // Chỉ lấy phần Base64 sau dấu phẩy
+                    setImage(base64String);
+                    setImagePreview(`data:image/jpeg;base64,${base64String}`);
+
+                    // Sau khi có chuỗi Base64, bạn có thể gửi dữ liệu này đến API
+                    const dataStoreUpdate = {
+                        username: username,
+                        image: base64String,
+                    };
+
+                    let data = await PostUpdateProfile(username, image);
+                    if (data && data.EC === 0) {
+                        dispatch(doUpdateProfile(dataStoreUpdate));
+                        toast.success(data.EM);
+                    } else {
+                        toast.error(data.EM);
+                    }
+                };
+
+                reader.readAsDataURL(image); // Đọc file để chuyển đổi sang Base64
+            } else {
+                // Nếu `image` đã là chuỗi Base64 (người dùng không thay đổi ảnh)
+                const dataStoreUpdate = {
+                    username: username,
+                    image: image,
+                };
+
+                let data = await PostUpdateProfile(username, image);
+                if (data && data.EC === 0) {
+                    dispatch(doUpdateProfile(dataStoreUpdate));
+                    toast.success(data.EM);
+                } else {
+                    toast.error(data.EM);
+                }
             }
-            // Save main info
-            let data = await PostUpdateProfile(username,image);
-            console.log(">> check res ", data);
-            if (data&& data.EC ===0){
-                dispatch(doUpdateProfile(dataStoreUpdate))
-                setEmail('');setPassword('');setUsername('');setImage('');setImagePreview('');setRole('');
-                toast.success(data.EM);
-            }else{
-                toast.error(data.EM);
-            } 
-            // Add your save logic for main info here
         } else if (activeTab === "password") {
-            if(newPass && currentPass && newPass === confirmPass){
-                
+            console.log("pass: ", currentPass, newPass, confirmPass)
+            if (newPass && currentPass) {
+                if (newPass === confirmPass) {
+                    let data = await PostChangePassword(currentPass, newPass);
+                    if (data && data.EC === 0) {
+                        toast.success(data.EM);
+                    } else {
+                        toast.error(data.EM)
+                    }
+
+
+
+                } else {
+                    toast.error("Confirm password does not match the new password");
+                }
+            } else {
+                toast.error("Current password incorrect")
             }
-            console.log("Saving password");
-            // Add your save logic for password here
+
         } else if (activeTab === "contact") {
-            // Save contact info (if needed)
+            // Xử lý logic lưu thông tin liên hệ ở đây
             console.log("Saving contact info");
-            // Add your save logic for contact info here
         }
     };
+
 
     return (
         <>
@@ -114,7 +160,11 @@ const ModalProfile = (props) => {
                             />
                         </Tab>
                         <Tab eventKey="password" title="Change Password">
-                            Tab content for Profile
+                            <ChangePassword
+                                setCurrentPass={setCurrentPass}
+                                setNewPass={setNewPass}
+                                setConfirmPass={setConfirmPass}
+                            />
                         </Tab>
                         <Tab eventKey="contact" title="Contact" disabled>
                             Tab content for Contact

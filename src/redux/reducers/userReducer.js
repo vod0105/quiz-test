@@ -3,6 +3,7 @@ import { FETCH_USER_LOGIN_SUCCESS, UPDATE_USER_SUCCESS, USER_LOGOUT_SUCCESS } fr
 // src/reducers/counterReducer.js
 const initialState = {
   account: {
+    id:'',
     email: '',
     access_token: '',
     refresh_token: '',
@@ -20,9 +21,10 @@ const userReducer = (state = initialState, action) => {
       return {
         ...state,
         account: {
+          id:action?.payload?.DT?.id,
           email: action?.payload?.DT?.email,
-          access_token: action?.payload?.DT?.access_token,
-          refresh_token: action?.payload?.DT?.refresh_token,
+          access_token: action?.payload?.DT?.accessToken,
+          refresh_token: action?.payload?.DT?.refreshToken,
           username: action?.payload?.DT?.username,
           image: action?.payload?.DT?.image,
           role: action?.payload?.DT?.role
@@ -33,6 +35,7 @@ const userReducer = (state = initialState, action) => {
       return {
         ...state,
         account: {
+          id:'',
           email: '',
           access_token: '',
           refresh_token: '',

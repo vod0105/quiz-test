@@ -7,16 +7,16 @@ import { NavDropdown } from 'react-bootstrap';
 import { logout } from '../../services/apiServices';
 import { toast } from 'react-toastify';
 import { doLogout } from '../../redux/actions/useAction';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ModalProfile from './Profile';
+import ChatButton from '../Chatbox/ChatButton';
 
 const Header = () => {
   const [showProfile,setShowProfile] = useState(false);
-
+  const [showChat, setShowChat] = useState(true);
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated)
   const account = useSelector(state => state.user.account)
-
   const navigate = useNavigate();
   const handleLogin = () => {
     navigate('/login');
@@ -26,14 +26,24 @@ const Header = () => {
     navigate('/register');
   }
 
-  const handleLogout = async() => {
-    console.log('check logout: ',account.email,account.refresh_token)
-    let res = await logout(account.email,account.refresh_token);
-    if(res.EC === 0 ){
-      dispatch(doLogout());
-      toast.success(res.EM);
+  const handleLogout = async () => {
+    try {
+      console.log('check logout: ', account.email, account.refresh_token);
+      
+      let res = await logout(account.email, account.refresh_token);
+      
+      if (res.EC === 0) {
+        dispatch(doLogout());
+        toast.success(res.EM);
+      } else {
+        toast.error('Logout failed: ' + res.EM);
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast.error('Server is not responding. Please try again later.');
     }
-  }
+  };
+  
 
   const handleProfile = () => {
     setShowProfile(true);
@@ -67,6 +77,9 @@ const Header = () => {
           </Nav>
         </Navbar.Collapse>
       </Container>
+      <ChatButton showChat = {showChat}
+      setShowChat = {setShowChat}
+      />
     </Navbar>
     <ModalProfile 
           show = {showProfile}
