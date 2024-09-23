@@ -13,7 +13,6 @@ import ChatButton from '../Chatbox/ChatButton';
 
 const Header = () => {
   const [showProfile,setShowProfile] = useState(false);
-  const [showChat, setShowChat] = useState(true);
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(state => state.user.isAuthenticated)
   const account = useSelector(state => state.user.account)
@@ -77,8 +76,8 @@ const Header = () => {
           </Nav>
         </Navbar.Collapse>
       </Container>
-      <ChatButton showChat = {showChat}
-      setShowChat = {setShowChat}
+      <ChatButton 
+      
       />
     </Navbar>
     <ModalProfile 

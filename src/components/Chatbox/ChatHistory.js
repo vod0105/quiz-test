@@ -2,14 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { GetChatHistory } from "../../services/apiServices";
 import { store } from "../../redux/store";
 import { format, parseISO } from 'date-fns';
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { GetMarkMessagesAsRead } from "../../services/apiServices";
+import { updateAllUserStatus, updateUserIsRead, updateUserStatus } from "../../redux/actions/storesAction";
+import imageCompression from 'browser-image-compression';
+
 
 const ChatHistory = (props) => {
-    const { selectedUser, changeUserLocation, loadStores, handleLoadStores, updateStoreOnlineStatus, setIsOnline } = props;
+    const { selectedUser, changeUserLocation,setNewMessagesCount,newMessagesCount } = props;
     const [chatHistory, setChatHistory] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [ws, setWs] = useState(null);
-
     const idU = store.getState()?.user?.account?.id;
     const chatEndRef = useRef(null);
     const fileInputRef = useRef(null); // Create ref for file input
@@ -18,6 +21,34 @@ const ChatHistory = (props) => {
     const [imagePreview, setImagePreview] = useState("");
 
     const isLogin = useSelector((store) => store.user.isAuthenticated);
+    const dispatch = useDispatch();
+    // sử dụng nó để tham chiếu đến stores vì trong websocket nó luôn dữ giá trị ban đầu vì thế stores trong 
+    // đó ko có giá trị
+    const newMessagesCountRef = useRef(newMessagesCount);
+
+    useEffect(() => {
+        newMessagesCountRef.current = newMessagesCount;
+    }, [newMessagesCount]);
+
+    useEffect(() =>{
+        console.log("count: ",newMessagesCount);
+    },[newMessagesCount])
+
+    // useEffect (() => {
+    //     // UpdateOnlineSQL();
+    //     dispatch(updateUserIsRead(selectedUser.id,true));
+
+    // },[selectedUser]);
+
+
+
+    const UpdateOnlineSQL = async () => {
+        let res = await GetMarkMessagesAsRead(selectedUser.id);
+        if (res.EC === 0) {
+            console.log("update as read thanh cong");
+        }
+    }
+
     // Scroll to bottom when chatHistory changes
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,30 +74,26 @@ const ChatHistory = (props) => {
             if (message.type === 'online') {
                 const { userId, status } = message;
                 console.log(`User ${userId} is ${status ? 'online' : 'offline'}`);
-                if (!status) {
-                    setIsOnline(prev => prev.filter(id => id !== userId));
-                } else {
-                    setIsOnline(prev => {
-                        if (!prev.includes(userId)) {
-                            return [...prev, userId];
-                        }
-                        return prev; // No changes if user is already in the list
-                    });
-                }
+                dispatch(updateUserStatus(userId,status));
+                    
             } else if (message.type === 'onlineUsers') {
-                setIsOnline(message.onlineUsers);
+                setTimeout(() => {
+                    dispatch(updateAllUserStatus(message.onlineUsers));
+                  }, 2000);             
             } else if (message.receiver === idU || message.sender === idU) {
                 setChatHistory(prevChatHistory => [
                     ...prevChatHistory,
                     message
                 ]);
-            }
-            if (message.receiver === idU) {
-                // console.log("User online: ", message.sender);
-                changeUserLocation(message.sender);
-            } else if (message.sender === idU) {
-                // console.log("User online: ", message.sender);
-                changeUserLocation(message.receiver);
+                if (message.receiver === idU) {
+                    console.log("vao day rôiiiiff")
+                    dispatch(updateUserIsRead(idU,false));
+                    newMessagesCountRef.current += 1; // Cập nhật giá trị ref
+                    changeUserLocation(message.sender);
+                } else if (message.sender === idU) {
+                    // dispatch(updateUserIsRead(idU,false));
+                    changeUserLocation(message.receiver);
+                }
             }
         };
 
@@ -79,10 +106,10 @@ const ChatHistory = (props) => {
         const handleBeforeUnload = () => {
             socket.close();
         };
-    
+
         // Đăng ký sự kiện beforeunload để đóng WebSocket khi trang bị đóng
         window.addEventListener('beforeunload', handleBeforeUnload);
-    
+
         // Cleanup function: Hủy sự kiện trước khi component bị unmount
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -95,6 +122,7 @@ const ChatHistory = (props) => {
             fetchChatHistory();
         }
     }, [selectedUser]);
+
 
     const fetchChatHistory = async () => {
         let res = await GetChatHistory(selectedUser.id);
@@ -118,7 +146,7 @@ const ChatHistory = (props) => {
             ws.send(JSON.stringify(messagePayload));
             setInputMessage('');
 
-            if (loadStores) handleLoadStores();
+            // if (loadStores) handleLoadStores();
         }
     };
 
@@ -141,6 +169,50 @@ const ChatHistory = (props) => {
         fileInputRef.current.value = '';
     }
 
+    const sendImageData = async () => {
+        if (ws && image) {
+            try {
+                // Nén ảnh trước khi gửi
+                const options = {
+                    maxSizeMB: 1,           // Giới hạn kích thước ảnh (MB)
+                    maxWidthOrHeight: 800,  // Giới hạn kích thước chiều rộng hoặc chiều cao
+                    useWebWorker: true      // Sử dụng web worker để tăng hiệu suất
+                };
+                
+                const compressedImage = await imageCompression(image, options);
+    
+                // Đọc ảnh nén dưới dạng Base64
+                const reader = new FileReader();
+                reader.onload = () => {
+                    let imageData = reader.result.split(',')[1]; // Chỉ lấy phần Base64
+    
+                    const messagePayload = {
+                        sender: store?.getState()?.user?.account?.id,
+                        receiver: selectedUser.id,
+                        imageData: imageData, // Dữ liệu ảnh nén
+                        local_time: new Date().toISOString(),
+                    };
+                    
+                    console.log(messagePayload)
+                    // Kiểm tra nếu WebSocket đã mở
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify(messagePayload));
+                        console.log('Compressed image data sent successfully');
+                    } else {
+                        console.error('WebSocket is not open. Cannot send image data.');
+                    }
+    
+                    setImage(null); // Reset lại trạng thái ảnh
+                    setImagePreview(""); // Xóa ảnh xem trước
+    
+                };
+                reader.readAsDataURL(compressedImage);
+            } catch (error) {
+                console.error('Error compressing or sending image:', error);
+            }
+        }
+    };
+    
     const formatMessageTime = (time) => {
         if (time) {
             try {
@@ -217,7 +289,18 @@ const ChatHistory = (props) => {
             <div className="chat-message clearfix">
                 <div className="input-group mb-0">
                     <div className="input-group-prepend">
-                        <span className="input-group-text" onClick={sendMessage}><i className="fa fa-send"></i></span>
+                        <span
+                            className="input-group-text"
+                            onClick={() => {
+                                if (imagePreview) {
+                                    sendImageData(); // Gửi dữ liệu ảnh nếu có
+                                } else {
+                                    sendMessage(); // Gửi tin nhắn văn bản nếu không có ảnh
+                                }
+                            }}
+                        >
+                            <i className="fa fa-send"></i>
+                        </span>
                     </div>
                     <div className="input-container">
                         {!imagePreview ? (

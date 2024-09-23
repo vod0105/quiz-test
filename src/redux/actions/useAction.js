@@ -22,3 +22,4 @@ export const doUpdateProfile = (data) => {
         payload: data
     }
 }
+

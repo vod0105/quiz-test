@@ -4,9 +4,10 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-  }
-  
-  .chat-button button {
+    /* Thay đổi màu nền, padding và border-radius của nút chat */
+}
+
+.chat-button button {
     background-color: #e86f1e;
     color: white;
     border: none;
@@ -15,11 +16,29 @@
     font-size: 16px;
     cursor: pointer;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .chat-button button:hover {
-    background-color: #b36b00;
-  }
+    position: relative; /* Để badge có thể được căn chỉnh tương đối với nút */
+}
+
+.chat-button button:hover {
+    background-color: #ca9636;
+}
+
+/* CSS cho notification-badge */
+.notification-badge {
+    position: absolute;
+    top: -10px; /* Điều chỉnh vị trí của badge so với nút */
+    right: -10px; /* Điều chỉnh vị trí của badge so với nút */
+    background-color: red; /* Màu nền của badge */
+    color: white; /* Màu chữ của badge */
+    border-radius: 50%;
+    width: 20px; /* Đường kính của badge */
+    height: 20px; /* Đường kính của badge */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
   
 
   .container-chat{
@@ -380,4 +399,12 @@
 .remove-image i {
     font-size: 16px;
     color: #333;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
 }

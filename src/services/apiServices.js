@@ -66,14 +66,22 @@ const PostChangePassword = (currentPass, newPass) => {
 }
 
 const GetAllStores = () => {
-    return instance.get("users");
+    return axios.get("users");
 }
 
 const GetAllStoresChat = () => {
-    return instance.get("users-chat");
+    return axios.get("users-chat");
 }
 
 const GetChatHistory = (idReceiver) => {
     return axios.get(`api/chats/receiver/${idReceiver}`);
 }
-export { GetAllStoresChat,GetChatHistory,GetAllStores, PostCreateUser, GetAllUsers, PutUpdateUser, DeleteUser, GetAllUsersWithPaginate, PostSignIn, PostSignUp, getQuizByUser, logout, PostUpdateProfile, PostChangePassword }
+
+const GetUnRead = () =>{
+    return axios.get(`api/chats/users/unread`);
+}
+
+const GetMarkMessagesAsRead = (idSender) =>{
+    return axios.get(`api/chats/mark-messages-as-read/${idSender}`)
+}
+export {GetUnRead,GetMarkMessagesAsRead, GetAllStoresChat,GetChatHistory,GetAllStores, PostCreateUser, GetAllUsers, PutUpdateUser, DeleteUser, GetAllUsersWithPaginate, PostSignIn, PostSignUp, getQuizByUser, logout, PostUpdateProfile, PostChangePassword }
